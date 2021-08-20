@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
 using VacationRental.Api.Models;
+using VacationRental.DAL.InMemory.Di;
 
 namespace VacationRental.Api
 {
@@ -22,6 +23,9 @@ namespace VacationRental.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddInMemoryRepositories();
+            
 
             services.AddSwaggerGen(opts => opts.SwaggerDoc("v1", new Info { Title = "Vacation rental information", Version = "v1" }));
 
