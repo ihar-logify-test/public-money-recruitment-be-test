@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VacationRental.DAL.InMemory\VacationRental.DAL.InMemory.csproj" />
+    <ProjectReference Include="..\VacationRental.BLL\VacationRental.BLL.csproj" />
   </ItemGroup>
 
 </Project>

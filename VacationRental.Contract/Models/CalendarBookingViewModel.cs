@@ -1,4 +1,4 @@
-﻿namespace VacationRental.Api.Models
+﻿namespace VacationRental.Contract.Models
 {
     public class CalendarBookingViewModel
     {
