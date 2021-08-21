@@ -14,6 +14,10 @@ using VacationRental.BLL.Extensions;
 using VacationRental.DAL.InMemory.Di;
 using VacationRental.Contract.Models;
 using VacationRental.Api.Filters;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using VacationRental.BLL.Exceptions;
 
 namespace VacationRental.Api
 {
@@ -50,6 +54,25 @@ namespace VacationRental.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseExceptionHandler(c => c.Run(async context =>
+            {
+                var exception = context.Features
+                                            .Get<IExceptionHandlerPathFeature>()
+                                            .Error;
+                var response = new { error = exception.Message };
+                var result = env.IsDevelopment() 
+                                    ? JsonConvert.SerializeObject(new { error = exception.Message, stackTrace = exception.StackTrace }) 
+                                    : JsonConvert.SerializeObject(new { error = exception.Message });
+                context.Response.ContentType = "application/json";
+                if (exception is NotFoundExceptionBase) 
+                { 
+                    context.Response.StatusCode = "get".Equals(context.Request.Method, StringComparison.InvariantCultureIgnoreCase) 
+                                                                ? StatusCodes.Status404NotFound 
+                                                                : StatusCodes.Status400BadRequest;
+                }
+                await context.Response.WriteAsync(result);
+            }));
+            
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(opts => opts.SwaggerEndpoint("/swagger/v1/swagger.json", "VacationRental v1"));

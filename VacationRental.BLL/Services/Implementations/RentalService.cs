@@ -10,6 +10,7 @@ using VacationRental.Contract.Models;
 using VacationRental.DAL.Extensions;
 using VacationRental.DAL.Model;
 using VacationRental.DAL.Repositories;
+using VacationRental.BLL.Exceptions;
 
 namespace VacationRental.BLL.Services.Implementations
 {
@@ -32,10 +33,10 @@ namespace VacationRental.BLL.Services.Implementations
         public int CreateBooking(BookingBindingModel bookingModel)
         {
             if (!_rentalRepository.Exists(bookingModel.RentalId))
-                throw new ApplicationException("Rental not found");
+                throw new RentalNotFoundException(bookingModel.RentalId);
 
             var bookedUnitsCount = _bookingRepository.BookedUnitsCount(bookingModel.RentalId, bookingModel.Start, bookingModel.Start.AddDays(bookingModel.Nights));
-            if (bookedUnitsCount >= _rentalRepository.Load(bookingModel.RentalId).Units)
+            if (bookedUnitsCount >= _rentalRepository.LoadOrNull(bookingModel.RentalId).Units)
                 throw new ApplicationException("Not available");
             
             var bookingDataModel = _mapper.Map<BookingDataModel>(bookingModel);
@@ -50,14 +51,16 @@ namespace VacationRental.BLL.Services.Implementations
 
         public BookingViewModel GetBooking(int bookingId)
         {
-            var bookingDataModel = _bookingRepository.Load(bookingId);
+            var bookingDataModel = _bookingRepository.LoadOrNull(bookingId);
+            if (bookingDataModel == null) throw new BookingNotFoundException(bookingId);
+            
             return _mapper.Map<BookingViewModel>(bookingDataModel);
         }
         
         public CalendarViewModel GetCalendar(GetCalendarModel getCalendarModel)
         {
             if (!_rentalRepository.Exists(getCalendarModel.RentalId))
-                throw new ApplicationException("Rental not found");
+                throw new RentalNotFoundException(getCalendarModel.RentalId);
 
             var result = new CalendarViewModel 
             {
@@ -87,7 +90,9 @@ namespace VacationRental.BLL.Services.Implementations
 
         public RentalViewModel GetRental(int rentalId)
         {
-            var rentalDataModel = _rentalRepository.Load(rentalId);
+            var rentalDataModel = _rentalRepository.LoadOrNull(rentalId);
+            if (rentalDataModel == null) throw new RentalNotFoundException(rentalId);
+
             return _mapper.Map<RentalViewModel>(rentalDataModel);
         }
     }

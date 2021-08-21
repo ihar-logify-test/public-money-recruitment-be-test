@@ -23,11 +23,11 @@ namespace VacationRental.DAL.InMemory.Repositories
             return _storage.ContainsKey(id);
         }
 
-        public TEntity Load(int id)
+        public TEntity LoadOrNull(int id)
         {
             if (_storage.TryGetValue(id, out var entity)) return entity;
-
-            throw new Exception(); //todo
+            
+            return default;
         }
 
         public IEnumerable<TEntity> LoadAll()
