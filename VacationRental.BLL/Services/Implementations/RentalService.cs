@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using VacationRental.BLL.Services.Interfaces;
 using VacationRental.Contract.Models;
 using VacationRental.DAL.Model;
@@ -12,53 +13,56 @@ namespace VacationRental.BLL.Services.Implementations
     {
         private readonly IRentalRepository _rentalRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IMapper _mapper;
 
         public RentalService(
-            IBookingRepository bookingRepository, 
-            IRentalRepository rentalRepository)
+            IBookingRepository bookingRepository,
+            IRentalRepository rentalRepository, 
+            IMapper mapper)
         {
             _bookingRepository = bookingRepository;
             _rentalRepository = rentalRepository;
+            _mapper = mapper;
         }
 
-        public int CreateBooking(BookingBindingModel rentalModel)
+        public int CreateBooking(BookingBindingModel bookingModel)
         {
-            if (rentalModel.Nights <= 0)
+            if (bookingModel.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
-            if (!_rentalRepository.LoadAll().Any(_ => _.Id == rentalModel.RentalId))
+            if (!_rentalRepository.LoadAll().Any(_ => _.Id == bookingModel.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            for (var i = 0; i < rentalModel.Nights; i++)
+            for (var i = 0; i < bookingModel.Nights; i++)
             {
                 var count = 0;
                 foreach (var booking in _bookingRepository.LoadAll())
                 {
-                    if (booking.RentalId == rentalModel.RentalId
-                        && (booking.Start <= rentalModel.Start.Date && booking.Start.AddDays(booking.Nights) > rentalModel.Start.Date)
-                        || (booking.Start < rentalModel.Start.AddDays(rentalModel.Nights) && booking.Start.AddDays(booking.Nights) >= rentalModel.Start.AddDays(rentalModel.Nights))
-                        || (booking.Start > rentalModel.Start && booking.Start.AddDays(booking.Nights) < rentalModel.Start.AddDays(rentalModel.Nights)))
+                    if (booking.RentalId == bookingModel.RentalId
+                        && (booking.Start <= bookingModel.Start.Date && booking.Start.AddDays(booking.Nights) > bookingModel.Start.Date)
+                        || (booking.Start < bookingModel.Start.AddDays(bookingModel.Nights) && booking.Start.AddDays(booking.Nights) >= bookingModel.Start.AddDays(bookingModel.Nights))
+                        || (booking.Start > bookingModel.Start && booking.Start.AddDays(booking.Nights) < bookingModel.Start.AddDays(bookingModel.Nights)))
                     {
                         count++;
                     }
                 }
-                if (count >= _rentalRepository.Load(rentalModel.RentalId).Units)
+                if (count >= _rentalRepository.Load(bookingModel.RentalId).Units)
                     throw new ApplicationException("Not available");
             }
             
-            var bookingToAdd = new Booking {Nights = rentalModel.Nights, Start = rentalModel.Start, RentalId = rentalModel.RentalId };
+            var bookingToAdd = _mapper.Map<Booking>(bookingModel);
             return _bookingRepository.Add(bookingToAdd); 
         }
 
         public int CreateRental(RentalBindingModel rentalModel)
         {
-            var rental = new Rental { Units = rentalModel.Units };
+            var rental = _mapper.Map<Rental>(rentalModel);
             return _rentalRepository.Add(rental);
         }
 
         public BookingViewModel GetBooking(int bookingId)
         {
             var booking = _bookingRepository.Load(bookingId);
-            return new BookingViewModel {Id = booking.Id, Nights = booking.Nights, Start = booking.Start, RentalId = booking.RentalId };
+            return _mapper.Map<BookingViewModel>(booking);
         }
 
         public CalendarViewModel GetCalendar(int rentalId, DateTime start, int nights)
@@ -99,7 +103,7 @@ namespace VacationRental.BLL.Services.Implementations
         public RentalViewModel GetRental(int rentalId)
         {
             var rental = _rentalRepository.Load(rentalId);
-            return new RentalViewModel {Id = rental.Id, Units = rental.Units};
+            return _mapper.Map<RentalViewModel>(rental);
         }
     }
 }
