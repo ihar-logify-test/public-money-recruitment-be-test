@@ -19,9 +19,9 @@ namespace VacationRental.Api.Controllers
         }
 
         [HttpGet]
-        public CalendarViewModel Get(int rentalId, DateTime start, int nights)
+        public CalendarViewModel Get([FromQuery] GetCalendarModel getCalendarModel)
         {
-            return _rentalService.GetCalendar(rentalId, start, nights);
+            return _rentalService.GetCalendar(getCalendarModel);
         }
     }
 }

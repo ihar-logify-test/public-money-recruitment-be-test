@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 
 using AutoMapper;
+
 using VacationRental.BLL.Extensions;
 using VacationRental.BLL.Services.Interfaces;
 using VacationRental.Contract.Models;
@@ -30,8 +31,6 @@ namespace VacationRental.BLL.Services.Implementations
 
         public int CreateBooking(BookingBindingModel bookingModel)
         {
-            if (bookingModel.Nights <= 0)
-                throw new ApplicationException("Nigts must be positive");
             if (!_rentalRepository.Exists(bookingModel.RentalId))
                 throw new ApplicationException("Rental not found");
 
@@ -42,7 +41,6 @@ namespace VacationRental.BLL.Services.Implementations
             var bookingDataModel = _mapper.Map<BookingDataModel>(bookingModel);
             return _bookingRepository.Add(bookingDataModel); 
         }
-        
         
         public int CreateRental(RentalBindingModel rentalModel)
         {
@@ -55,21 +53,20 @@ namespace VacationRental.BLL.Services.Implementations
             var bookingDataModel = _bookingRepository.Load(bookingId);
             return _mapper.Map<BookingViewModel>(bookingDataModel);
         }
-
-        public CalendarViewModel GetCalendar(int rentalId, DateTime start, int nights)
+        
+        public CalendarViewModel GetCalendar(GetCalendarModel getCalendarModel)
         {
-            if (nights < 0)
-                throw new ApplicationException("Nights must be positive");
-            if (!_rentalRepository.Exists(rentalId))
+            if (!_rentalRepository.Exists(getCalendarModel.RentalId))
                 throw new ApplicationException("Rental not found");
 
             var result = new CalendarViewModel 
             {
-                RentalId = rentalId,
+                RentalId = getCalendarModel.RentalId,
                 Dates = new List<CalendarDateViewModel>() 
             };
-
-            for (var i = 0; i < nights; i++)
+            
+            var start = getCalendarModel.Start.Date;
+            for (var i = 0; i < getCalendarModel.Nights; i++)
             {
                 var date = new CalendarDateViewModel
                 {
@@ -77,7 +74,7 @@ namespace VacationRental.BLL.Services.Implementations
                     Bookings = new List<CalendarBookingViewModel>()
                 };
 
-                var calendarBookings = _bookingRepository.LoadBookingsForPeriod(rentalId, start, start.AddDays(nights))
+                var calendarBookings = _bookingRepository.LoadBookingsForPeriod(getCalendarModel.RentalId, start, start.AddDays(getCalendarModel.Nights))
                                                             .Where(_ => date.Date.IsInRange(_.Start, _.GetEndDate()))
                                                             .Select(_ => new CalendarBookingViewModel { Id = _.Id });
 

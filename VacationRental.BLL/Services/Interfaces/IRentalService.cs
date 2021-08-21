@@ -10,6 +10,6 @@ namespace VacationRental.BLL.Services.Interfaces
         int CreateBooking(BookingBindingModel booking);
         RentalViewModel GetRental(int rentalId);
         BookingViewModel GetBooking(int bookingId);
-        CalendarViewModel GetCalendar(int rentalId, DateTime start, int nights);
+        CalendarViewModel GetCalendar(GetCalendarModel getCalendarModel);
     }
 }

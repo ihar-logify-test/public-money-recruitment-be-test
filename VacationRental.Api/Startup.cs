@@ -8,9 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
+using FluentValidation.AspNetCore;
 
 using VacationRental.BLL.Extensions;
 using VacationRental.DAL.InMemory.Di;
+using VacationRental.Contract.Models;
+using VacationRental.Api.Filters;
 
 namespace VacationRental.Api
 {
@@ -26,7 +29,10 @@ namespace VacationRental.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options => options.Filters.Add<ValidationFilter>())
+                        .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                        .AddFluentValidation(options => options.RegisterValidatorsFromAssemblyContaining<BookingBindingModel>());
+            
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
             services.AddInMemoryRepositories();
