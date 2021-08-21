@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+
 using VacationRental.DAL.Model;
 
 namespace VacationRental.DAL.Repositories
@@ -8,5 +9,6 @@ namespace VacationRental.DAL.Repositories
         TEntity Load(TKey id);
         TKey Add(TEntity rental);
         IEnumerable<TEntity> LoadAll();
+        bool Exists(TKey id);
     }
 }

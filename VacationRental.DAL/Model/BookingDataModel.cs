@@ -2,7 +2,7 @@ using System;
 
 namespace VacationRental.DAL.Model
 {
-    public class Booking : IIdentifier<int>
+    public class BookingDataModel : IIdentifier<int>
     {
         public int Id { get; set; }
         public int RentalId { get; set; }

@@ -1,4 +1,5 @@
 using AutoMapper;
+
 using VacationRental.Contract.Models;
 using VacationRental.DAL.Model;
 
@@ -8,11 +9,11 @@ namespace VacationRental.BLL.Mapping.Profiles
     {
         public DataModelProfile()
         {
-            CreateMap<BookingBindingModel, Booking>();
-            CreateMap<Booking, BookingViewModel>();
+            CreateMap<BookingBindingModel, BookingDataModel>();
+            CreateMap<BookingDataModel, BookingViewModel>();
             
-            CreateMap<RentalBindingModel, Rental>();
-            CreateMap<Rental, RentalViewModel>();
+            CreateMap<RentalBindingModel, RentalDataModel>();
+            CreateMap<RentalDataModel, RentalViewModel>();
         }
     }
 }

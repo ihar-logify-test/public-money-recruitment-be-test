@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+
 using Microsoft.AspNetCore.Mvc;
+
 using VacationRental.BLL.Services.Interfaces;
 using VacationRental.Contract.Models;
 

@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using AutoMapper;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using Swashbuckle.AspNetCore.Swagger;
+using AutoMapper;
+
 using VacationRental.BLL.Extensions;
 using VacationRental.DAL.InMemory.Di;
 

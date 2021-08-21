@@ -3,7 +3,7 @@ using VacationRental.DAL.Repositories;
 
 namespace VacationRental.DAL.InMemory.Repositories
 {
-    public class RentalRepository : InMemoryRepository<Rental>, IRentalRepository
+    public class RentalRepository : InMemoryRepository<RentalDataModel>, IRentalRepository
     {
     }
 }

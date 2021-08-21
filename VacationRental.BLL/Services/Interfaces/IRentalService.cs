@@ -1,4 +1,5 @@
 using System;
+
 using VacationRental.Contract.Models;
 
 namespace VacationRental.BLL.Services.Interfaces

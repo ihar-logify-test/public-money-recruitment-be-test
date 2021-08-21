@@ -1,9 +1,5 @@
-﻿using System.Linq;
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using VacationRental.DAL.Repositories;
-using VacationRental.DAL.Model;
+﻿using Microsoft.AspNetCore.Mvc;
+
 using VacationRental.Contract.Models;
 using VacationRental.BLL.Services.Interfaces;
 

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+
 using VacationRental.DAL.InMemory.Repositories;
 using VacationRental.DAL.Repositories;
 

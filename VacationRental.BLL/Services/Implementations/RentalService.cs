@@ -1,9 +1,12 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using AutoMapper;
+using VacationRental.BLL.Extensions;
 using VacationRental.BLL.Services.Interfaces;
 using VacationRental.Contract.Models;
+using VacationRental.DAL.Extensions;
 using VacationRental.DAL.Model;
 using VacationRental.DAL.Repositories;
 
@@ -29,47 +32,35 @@ namespace VacationRental.BLL.Services.Implementations
         {
             if (bookingModel.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
-            if (!_rentalRepository.LoadAll().Any(_ => _.Id == bookingModel.RentalId))
+            if (!_rentalRepository.Exists(bookingModel.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            for (var i = 0; i < bookingModel.Nights; i++)
-            {
-                var count = 0;
-                foreach (var booking in _bookingRepository.LoadAll())
-                {
-                    if (booking.RentalId == bookingModel.RentalId
-                        && (booking.Start <= bookingModel.Start.Date && booking.Start.AddDays(booking.Nights) > bookingModel.Start.Date)
-                        || (booking.Start < bookingModel.Start.AddDays(bookingModel.Nights) && booking.Start.AddDays(booking.Nights) >= bookingModel.Start.AddDays(bookingModel.Nights))
-                        || (booking.Start > bookingModel.Start && booking.Start.AddDays(booking.Nights) < bookingModel.Start.AddDays(bookingModel.Nights)))
-                    {
-                        count++;
-                    }
-                }
-                if (count >= _rentalRepository.Load(bookingModel.RentalId).Units)
-                    throw new ApplicationException("Not available");
-            }
+            var bookedUnitsCount = _bookingRepository.BookedUnitsCount(bookingModel.RentalId, bookingModel.Start, bookingModel.Start.AddDays(bookingModel.Nights));
+            if (bookedUnitsCount >= _rentalRepository.Load(bookingModel.RentalId).Units)
+                throw new ApplicationException("Not available");
             
-            var bookingToAdd = _mapper.Map<Booking>(bookingModel);
-            return _bookingRepository.Add(bookingToAdd); 
+            var bookingDataModel = _mapper.Map<BookingDataModel>(bookingModel);
+            return _bookingRepository.Add(bookingDataModel); 
         }
-
+        
+        
         public int CreateRental(RentalBindingModel rentalModel)
         {
-            var rental = _mapper.Map<Rental>(rentalModel);
-            return _rentalRepository.Add(rental);
+            var rentalDataModel = _mapper.Map<RentalDataModel>(rentalModel);
+            return _rentalRepository.Add(rentalDataModel);
         }
 
         public BookingViewModel GetBooking(int bookingId)
         {
-            var booking = _bookingRepository.Load(bookingId);
-            return _mapper.Map<BookingViewModel>(booking);
+            var bookingDataModel = _bookingRepository.Load(bookingId);
+            return _mapper.Map<BookingViewModel>(bookingDataModel);
         }
 
         public CalendarViewModel GetCalendar(int rentalId, DateTime start, int nights)
         {
             if (nights < 0)
                 throw new ApplicationException("Nights must be positive");
-            if (!_rentalRepository.LoadAll().Any(_ => _.Id == rentalId))
+            if (!_rentalRepository.Exists(rentalId))
                 throw new ApplicationException("Rental not found");
 
             var result = new CalendarViewModel 
@@ -77,6 +68,7 @@ namespace VacationRental.BLL.Services.Implementations
                 RentalId = rentalId,
                 Dates = new List<CalendarDateViewModel>() 
             };
+
             for (var i = 0; i < nights; i++)
             {
                 var date = new CalendarDateViewModel
@@ -85,15 +77,11 @@ namespace VacationRental.BLL.Services.Implementations
                     Bookings = new List<CalendarBookingViewModel>()
                 };
 
-                foreach (var booking in _bookingRepository.LoadAll())
-                {
-                    if (booking.RentalId == rentalId
-                        && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)
-                    {
-                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id });
-                    }
-                }
+                var calendarBookings = _bookingRepository.LoadBookingsForPeriod(rentalId, start, start.AddDays(nights))
+                                                            .Where(_ => date.Date.IsInRange(_.Start, _.GetEndDate()))
+                                                            .Select(_ => new CalendarBookingViewModel { Id = _.Id });
 
+                date.Bookings.AddRange(calendarBookings);
                 result.Dates.Add(date);
             }
 
@@ -102,8 +90,8 @@ namespace VacationRental.BLL.Services.Implementations
 
         public RentalViewModel GetRental(int rentalId)
         {
-            var rental = _rentalRepository.Load(rentalId);
-            return _mapper.Map<RentalViewModel>(rental);
+            var rentalDataModel = _rentalRepository.Load(rentalId);
+            return _mapper.Map<RentalViewModel>(rentalDataModel);
         }
     }
 }
