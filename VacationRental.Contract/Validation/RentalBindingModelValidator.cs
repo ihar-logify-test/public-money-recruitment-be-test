@@ -9,6 +9,7 @@ namespace VacationRental.Contract.Validation
         public RentalBindingModelValidator()
         {
             RuleFor(_ => _.Units).GreaterThan(0);
+            RuleFor(_ => _.PreparationTimeInDays).GreaterThanOrEqualTo(0);
         }
     }
 }

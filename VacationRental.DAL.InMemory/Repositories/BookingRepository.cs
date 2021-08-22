@@ -24,8 +24,7 @@ namespace VacationRental.DAL.InMemory.Repositories
         {
             return BookingsByRentalQuery(rentalId).Where(IsOverlappingFilter(start, end));
         }
-
-
+        
         private Expression<Func<BookingDataModel, bool>> IsOverlappingFilter(DateTime start, DateTime end)
         {
             var startDate = start.Date;
