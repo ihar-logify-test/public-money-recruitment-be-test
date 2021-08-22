@@ -35,7 +35,11 @@ namespace VacationRental.DAL.InMemory.Repositories
             return _storage.Values;
         }
 
-        private int GenerateNextId() => _storage.Count() + 1;
+        public void Update(TEntity entity)
+        {
+            _storage[entity.Id] = entity;
+        }
         
+        private int GenerateNextId() => _storage.Count() + 1;
     }
 }

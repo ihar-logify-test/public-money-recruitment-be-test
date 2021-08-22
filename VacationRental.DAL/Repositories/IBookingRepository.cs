@@ -8,5 +8,6 @@ namespace VacationRental.DAL.Repositories
     {
         int BookedUnitsCount(int rentalId, DateTime start, DateTime end);
         IEnumerable<BookingDataModel> LoadBookingsForPeriod(int rentalId, DateTime start, DateTime end);
+        IEnumerable<BookingDataModel> LoadBookingsForRental(int rentalId);
     }
 }

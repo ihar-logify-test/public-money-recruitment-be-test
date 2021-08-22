@@ -1,5 +1,4 @@
 using System.Linq;
-using System;
 using System.Collections.Generic;
 
 using AutoMapper;
@@ -37,7 +36,7 @@ namespace VacationRental.BLL.Services.Implementations
                 throw new RentalNotFoundException(bookingModel.RentalId);
             
             if (!IsRentalAvailableForBooking(bookingModel, rental))
-                throw new ApplicationException("Not available");
+                throw new OperationNotAvailableException("The rental is fully booked for the requested dates.");
             
             var bookingDataModel = _mapper.Map<BookingDataModel>(bookingModel);
             return _bookingRepository.Add(bookingDataModel); 
@@ -49,10 +48,19 @@ namespace VacationRental.BLL.Services.Implementations
             var endDate = bookingModel.Start.AddDays(bookingModel.Nights + rentalDataModel.PreparationTimeInDays);
 
             var exitstingBookings = _bookingRepository.LoadBookingsForPeriod(bookingModel.RentalId, startDate, endDate);
-            
-            return exitstingBookings.SelectMany(_ => _.GetDatesList(preparationDays: rentalDataModel.PreparationTimeInDays))
+            return !IsFullyBooked(exitstingBookings, rentalDataModel.Units, rentalDataModel.PreparationTimeInDays);
+        }
+
+        private bool IsFullyBooked(IEnumerable<BookingDataModel> bookings, int rentalUnitsCount, int preparationDays)
+        {
+            return DoOverlappringExceedUnitCount(bookings, rentalUnitsCount - 1, preparationDays);
+        }
+        
+        private bool DoOverlappringExceedUnitCount(IEnumerable<BookingDataModel> bookings, int rentalUnitsCount, int preparationDays)
+        {
+            return bookings.SelectMany(_ => _.GetDatesList(preparationDays: preparationDays))
                                     .GroupBy(_ => _, (key, elements) => elements.Count())
-                                    .All(_ => _ < rentalDataModel.Units);
+                                    .Any(_ => _ > rentalUnitsCount);
         }
         
         public int CreateRental(RentalBindingModel rentalModel)
@@ -132,6 +140,22 @@ namespace VacationRental.BLL.Services.Implementations
             if (rentalDataModel == null) throw new RentalNotFoundException(rentalId);
 
             return _mapper.Map<RentalViewModel>(rentalDataModel);
+        }
+
+        public void UpdateRental(int id, RentalBindingModel rental)
+        {
+            var bookings = _bookingRepository.LoadBookingsForRental(id);
+            if (DoOverlappringExceedUnitCount(bookings, rental.Units, rental.PreparationTimeInDays))
+            {
+                throw new OperationNotAvailableException($"Can't update rental due to either '{nameof(rental.Units)}'"
+                                                         + $" or '{nameof(rental.PreparationTimeInDays)}' values conflict with"
+                                                        + " existing bookings.");
+            }
+            
+            var rentalDataModel = _mapper.Map<RentalDataModel>(rental);
+            rentalDataModel.Id = id;
+            
+            _rentalRepository.Update(rentalDataModel);
         }
 
         private class BookingUnitAllocator

@@ -29,5 +29,12 @@ namespace VacationRental.Api.Controllers
             var id = _rentalService.CreateRental(model);
             return new ResourceIdViewModel { Id = id };
         }
+        
+        [HttpPut]
+        [Route("{id:int}")]
+        public void Put(int id, RentalBindingModel model)
+        {
+            _rentalService.UpdateRental(id, model);
+        }
     }
 }

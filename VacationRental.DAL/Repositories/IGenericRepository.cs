@@ -10,5 +10,6 @@ namespace VacationRental.DAL.Repositories
         TKey Add(TEntity rental);
         IEnumerable<TEntity> LoadAll();
         bool Exists(TKey id);
+        void Update(TEntity entity);
     }
 }

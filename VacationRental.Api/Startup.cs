@@ -64,12 +64,18 @@ namespace VacationRental.Api
                                     ? JsonConvert.SerializeObject(new { error = exception.Message, stackTrace = exception.StackTrace }) 
                                     : JsonConvert.SerializeObject(new { error = exception.Message });
                 context.Response.ContentType = "application/json";
-                if (exception is NotFoundExceptionBase) 
-                { 
-                    context.Response.StatusCode = "get".Equals(context.Request.Method, StringComparison.InvariantCultureIgnoreCase) 
+                switch (exception)
+                {
+                    case NotFoundExceptionBase _:
+                        context.Response.StatusCode = "get".Equals(context.Request.Method, StringComparison.InvariantCultureIgnoreCase) 
                                                                 ? StatusCodes.Status404NotFound 
                                                                 : StatusCodes.Status400BadRequest;
+                        break;
+                    case OperationNotAvailableException _:
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        break;
                 }
+                
                 await context.Response.WriteAsync(result);
             }));
             

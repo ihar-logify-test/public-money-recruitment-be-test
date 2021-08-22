@@ -19,7 +19,7 @@ namespace VacationRental.DAL.InMemory.Repositories
         {
             return LoadBookingsForPeriodQuery(rentalId, start, end).AsEnumerable();
         }
-
+        
         private IQueryable<BookingDataModel> LoadBookingsForPeriodQuery(int rentalId, DateTime start, DateTime end)
         {
             return BookingsByRentalQuery(rentalId).Where(IsOverlappingFilter(start, end));
@@ -36,5 +36,9 @@ namespace VacationRental.DAL.InMemory.Repositories
         
         private IQueryable<BookingDataModel> BookingsByRentalQuery(int rentalId) => _storage.Values.AsQueryable().Where(_ => _.RentalId == rentalId);
 
+        public IEnumerable<BookingDataModel> LoadBookingsForRental(int rentalId)
+        {
+            return BookingsByRentalQuery(rentalId).AsEnumerable();
+        }
     }
 }
