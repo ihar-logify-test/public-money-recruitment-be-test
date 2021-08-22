@@ -10,6 +10,7 @@ using VacationRental.DAL.Extensions;
 using VacationRental.DAL.Model;
 using VacationRental.DAL.Repositories;
 using VacationRental.BLL.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace VacationRental.BLL.Services.Implementations
 {
@@ -18,15 +19,19 @@ namespace VacationRental.BLL.Services.Implementations
         private readonly IRentalRepository _rentalRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger _logger;
+
 
         public RentalService(
             IBookingRepository bookingRepository,
-            IRentalRepository rentalRepository, 
-            IMapper mapper)
+            IRentalRepository rentalRepository,
+            IMapper mapper, 
+            ILogger<RentalService> logger)
         {
             _bookingRepository = bookingRepository;
             _rentalRepository = rentalRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public int CreateBooking(BookingBindingModel bookingModel)
@@ -39,7 +44,10 @@ namespace VacationRental.BLL.Services.Implementations
                 throw new OperationNotAvailableException("The rental is fully booked for the requested dates.");
             
             var bookingDataModel = _mapper.Map<BookingDataModel>(bookingModel);
-            return _bookingRepository.Add(bookingDataModel); 
+            
+            var id = _bookingRepository.Add(bookingDataModel); 
+            _logger.LogInformation("Booking with id '{id}' created.", id);
+            return id;
         }
 
         private bool IsRentalAvailableForBooking(BookingBindingModel bookingModel, RentalDataModel rentalDataModel)
@@ -66,7 +74,10 @@ namespace VacationRental.BLL.Services.Implementations
         public int CreateRental(RentalBindingModel rentalModel)
         {
             var rentalDataModel = _mapper.Map<RentalDataModel>(rentalModel);
-            return _rentalRepository.Add(rentalDataModel);
+            
+            var id = _rentalRepository.Add(rentalDataModel);
+            _logger.LogInformation("Rental with id '{id}' created.", id);
+            return id;
         }
 
         public BookingViewModel GetBooking(int bookingId)
@@ -156,6 +167,7 @@ namespace VacationRental.BLL.Services.Implementations
             rentalDataModel.Id = id;
             
             _rentalRepository.Update(rentalDataModel);
+            _logger.LogInformation("Rental with id '{id}' updated.", id);
         }
 
         private class BookingUnitAllocator

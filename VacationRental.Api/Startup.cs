@@ -5,18 +5,19 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
 using FluentValidation.AspNetCore;
+using Newtonsoft.Json;
 
 using VacationRental.BLL.Extensions;
 using VacationRental.DAL.InMemory.Di;
 using VacationRental.Contract.Models;
 using VacationRental.Api.Filters;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using VacationRental.BLL.Exceptions;
 
 namespace VacationRental.Api
@@ -47,13 +48,13 @@ namespace VacationRental.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseExceptionHandler(c => c.Run(async context =>
             {
                 var exception = context.Features
@@ -75,7 +76,7 @@ namespace VacationRental.Api
                         context.Response.StatusCode = StatusCodes.Status400BadRequest;
                         break;
                 }
-                
+                logger.LogError(exception, string.Empty);
                 await context.Response.WriteAsync(result);
             }));
             
